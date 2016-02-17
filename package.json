@@ -1,0 +1,22 @@
+{
+    "author": "Easyhard",
+    "name": "node-sensor",
+    "description": "A tool of analyzing NodeJS code.",
+    "version": "0.0.1",
+    "homepage": "",
+    "repository": {
+        "type": "",
+        "url": ""
+    },
+    "keywords": "",
+    "engines": {
+        "node": ">=0.8.0"
+    },
+    "dependencies": {
+        "esprima": "*"
+    },
+    "devDependencies": {
+    },
+    "scripts": {
+    }
+}
