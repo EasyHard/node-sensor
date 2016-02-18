@@ -1,9 +1,12 @@
 // TODO: handle default, rest and generator.
+var FunctionLevel = 'FunctionLevel';
+var BlockLevel = 'BlockLevel';
+
 function functionHandler(node) {
     var self = this;
     if (node.id)
       this.currentScope.add(node.id, node);
-    this.currentScope.overlay({level: FunctionLevel});
+    this.currentScope = this.currentScope.overlay({level: FunctionLevel});
     this.params.forEach(param => {
         if (param.type === 'Identifier') {
             self.currentScope.add(param.name, param);
@@ -12,7 +15,7 @@ function functionHandler(node) {
         }
     });
     this.walk(node.body);
-    this.currentScope.exit();
+    this.currentScope = this.currentScope.exit();
 }
 
 var handler = {
@@ -23,11 +26,11 @@ var handler = {
     },
     EmptyStatement: function () {},
     BlockStatement: function (node) {
-        this.currentScope.overlay({level: BlockLevel});
+        this.currentScope = this.currentScope.overlay({level: BlockLevel});
         this.body.forEach(node.statement => {
             this.walk(node.statement);
         });
-        this.currentScope.exit();
+        this.currentScope = this.currentScope.exit();
     },
     ExpressionStatement: function (node) {
         this.walk(node.expression);
@@ -51,7 +54,7 @@ var handler = {
         var self = this;
         // TODO: semantic of let-switch
         if (node.lexical) {
-            this.currentScope.overlay({level: BlockLevel});
+            this.currentScope = this.currentScope.overlay({level: BlockLevel});
         }
 
         this.walk(node.discriminant);
@@ -60,7 +63,7 @@ var handler = {
         });
 
         if (node.lexical) {
-            this.currentScope.exit();
+            this.currentScope = this.currentScope.exit();
         }
     },
     ReturnStatement: function (node) {
@@ -107,10 +110,10 @@ var handler = {
     // e.g. for (let i = 0; i < 5; i++;)
     LetStatement: function (node) {
         var self = this;
-        this.currentScope.overlay({level: BlockLevel});
+        this.currentScope = this.currentScope.overlay({level: BlockLevel});
         node.head.forEach(decl => self.walk(decl));
         this.walk(node.body);
-        this.currentScope.exit();
+        this.currentScope = this.currentScope.exit();
     },
     DebuggerStatement: function () {},
     FunctionDeclaration: functionHandler,
@@ -183,11 +186,41 @@ var handler = {
 
 };
 
+function Scope(parent, options) {
+    options = options || {};
+    options.level = options.level || FunctionLevel;
+    this.level = options.level;
+    this.scope = {};
+    this.parent = parent;
+}
+
+Scope.prototype.overlay = function (options) {
+    var scope = new Scope(this, options);
+    return scope;
+}
+
+Scope.prototype.add = function (name, node) {
+    this.currentScope.add(name, node);
+}
+
+Scope.prototype.resolve = function (name) {
+    var curr = this;
+    while (curr != null && !curr.scope.hasOwnProperty(name)) {
+        curr = curr.exit();
+    }
+    if (curr === null) return null;
+    else return curr.scope[name];
+}
+
+Scope.prototype.exit = function () {
+    return this.parent;
+}
+
 // TODO: LetStatement's scope should be statements
 // after it instead of whole block.
 function ScopeResolver(ast) {
     this.ast = parser.ast;
-
+    this.currentScope = new Scope(null);
 }
 
 
