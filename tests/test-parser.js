@@ -25,15 +25,4 @@ describe('Parser', function () {
         done();
     });
 
-    it('walk', function (done) {
-        var self = this;
-        this.defaultParser.parseString('var n = 100;', function () {
-            self.defaultParser.walk({
-                Identifier: function (node) {
-                    assert.equal(node.name, 'n');
-                    done();
-                }
-            });
-        });
-    });
 });
