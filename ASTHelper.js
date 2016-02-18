@@ -1,6 +1,6 @@
 var logger = require('./utils/logger');
-function walkAST(ast, handler) {
-    var thisForHandler = {};
+function walkAST(ast, handler, thisForHandler) {
+    thisForHandler = thisForHandler || {};
     function walk(node) {
         if (handler[node.type]) {
             handler[node.type].bind(thisForHandler)(node);

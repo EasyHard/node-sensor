@@ -24,4 +24,16 @@ describe("ASTHelper", function () {
         assert.equal(result, 6);
         done();
     });
+
+    it("walkAST thisForHandler", function (done) {
+        var handler = {
+            A: function (node) {
+                assert.equal(this.mark, 100);
+                done();
+            }
+        };
+        var ast = {type: "A"};
+        var thisForHandler = {mark: 100};
+        walkAST(ast, handler, thisForHandler);
+    });
 });
