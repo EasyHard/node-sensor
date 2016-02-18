@@ -1,3 +1,4 @@
+var walkAST = require('./ASTHelper').walkAST;
 // TODO: handle default, rest and generator.
 var FunctionLevel = 'FunctionLevel';
 var BlockLevel = 'BlockLevel';
@@ -19,7 +20,9 @@ function functionHandler(node) {
 }
 
 var handler = {
-    Program: function () {},
+    Program: function (node) {
+        node.body.forEach(statement => this.walk(statement));
+    },
     Function: functionHandler,
     Identifier: function (node) {
         this.resolve(node);
@@ -27,9 +30,7 @@ var handler = {
     EmptyStatement: function () {},
     BlockStatement: function (node) {
         this.currentScope = this.currentScope.overlay({level: BlockLevel});
-        this.body.forEach(node.statement => {
-            this.walk(node.statement);
-        });
+        this.body.forEach(statement => this.walk(statement));
         this.currentScope = this.currentScope.exit();
     },
     ExpressionStatement: function (node) {
@@ -77,9 +78,7 @@ var handler = {
         if (node.handler) {
             this.walk(node.handler);
         }
-        node.guardedHandlers.forEach(guardedHandler => {
-            this.walk(guardedHandler);
-        })
+        node.guardedHandlers.forEach(guardedHandler => this.walk(guardedHandler));
         this.walk(node.finalizer);
     },
     WhileStatement: function (node) {
@@ -222,6 +221,10 @@ function ScopeResolver(ast) {
     this.ast = parser.ast;
     this.currentScope = new Scope(null);
 }
+
+ScopeResolver.prototype.solve = function () {
+    walkAST(this.ast, handler, this);
+};
 
 
 module.exports = ScopeResolver;
