@@ -8,9 +8,13 @@ function Parser() {
 
 }
 
-Parser.prototype.parseString = function parseString(content, cb) {
+Parser.prototype.parseString = function parseString(content, options, cb) {
+    if (options.constructor === Function) {
+        cb = options;
+        options = undefined;
+    }
     try {
-        this.ast = esprima.parse(content);
+        this.ast = esprima.parse(content, options);
     } catch (e) {
         cb(e);
     } finally {
@@ -18,11 +22,15 @@ Parser.prototype.parseString = function parseString(content, cb) {
     }
 };
 
-Parser.prototype.parseFile = function parseFile(filename, cb) {
+Parser.prototype.parseFile = function parseFile(filename, options, cb) {
+    if (options.constructor === Function) {
+        cb = options;
+        options = undefined;
+    }
     var self = this;
     async.waterfall([
       fs.readFile.bind(fs, filename),
-      self.parseString
+      (content, cb) => self.parseFile(content, options, cb)
     ], cb);
 };
 
