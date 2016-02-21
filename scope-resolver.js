@@ -1,3 +1,4 @@
+var logger = require('./utils/logger');
 var walkAST = require('./ASTHelper').walkAST;
 // TODO: handle default, rest and generator.
 var FunctionLevel = 'FunctionLevel';
@@ -6,9 +7,9 @@ var BlockLevel = 'BlockLevel';
 function functionHandler(node) {
     var self = this;
     if (node.id)
-      this.currentScope.add(node.id, node);
+      this.currentScope.add(node.id.name, node);
     this.currentScope = this.currentScope.overlay({level: FunctionLevel});
-    this.params.forEach(param => {
+    node.params.forEach(param => {
         if (param.type === 'Identifier') {
             self.currentScope.add(param.name, param);
         } else {
@@ -25,12 +26,12 @@ var handler = {
     },
     Function: functionHandler,
     Identifier: function (node) {
-        node.scopeRef = this.resolve(node);
+        node.scopeRef = this.currentScope.resolve(node);
     },
     EmptyStatement: function () {},
     BlockStatement: function (node) {
         this.currentScope = this.currentScope.overlay({level: BlockLevel});
-        this.body.forEach(statement => this.walk(statement));
+        node.body.forEach(statement => this.walk(statement));
         this.currentScope = this.currentScope.exit();
     },
     ExpressionStatement: function (node) {
@@ -123,8 +124,8 @@ var handler = {
     },
     VariableDeclarator: function (node) {
         // TODO: handle `let` correctly
-        if (id.type === 'identifier') {
-            this.currentScope.add(id, node, this.currentDeclKind);
+        if (node.id.type === 'identifier') {
+            this.currentScope.add(node.id.name, node.id, this.currentDeclKind);
         }
         if (this.init) this.walk(init);
     },
@@ -177,7 +178,7 @@ var handler = {
     MemberExpression: function (node) {
         // TODO: field-sensitive
         if (!node.computed) {
-            node.scopeRef = this.resolve(node.object);
+            node.scopeRef = this.currentScope.resolve(node.object);
             this.walk(node.property);
         }
     }
@@ -197,7 +198,8 @@ Scope.prototype.overlay = function (options) {
 };
 
 Scope.prototype.add = function (name, node) {
-    this.currentScope.add(name, node);
+    logger.info('add', name);
+    this.scope[name] = node;
 };
 
 Scope.prototype.resolve = function (name) {
@@ -216,7 +218,7 @@ Scope.prototype.exit = function () {
 // TODO: LetStatement's scope should be statements
 // after it instead of whole block.
 function ScopeResolver(ast) {
-    this.ast = parser.ast;
+    this.ast = ast;
     this.currentScope = new Scope(null);
 }
 
