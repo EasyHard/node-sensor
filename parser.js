@@ -25,12 +25,12 @@ Parser.prototype.parseString = function parseString(content, options, cb) {
 Parser.prototype.parseFile = function parseFile(filename, options, cb) {
     if (options.constructor === Function) {
         cb = options;
-        options = undefined;
+        options = {};
     }
     var self = this;
     async.waterfall([
       fs.readFile.bind(fs, filename),
-      (content, cb) => self.parseFile(content, options, cb)
+      (content, cb) => self.parseString(content, options, cb)
     ], cb);
 };
 

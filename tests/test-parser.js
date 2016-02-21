@@ -7,6 +7,13 @@ describe('Parser', function () {
         done();
     });
 
+    it('parseFile', function (done) {
+        this.defaultParser.parseFile('./tests/test-parser.js', function (ast) {
+            assert.isDefined(ast);
+            done();
+        });
+    });
+
     it('parseString parses expression', function (done) {
         var self = this;
         this.defaultParser.parseString('var n = 100;', function (ast) {
