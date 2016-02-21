@@ -196,11 +196,11 @@ function Scope(parent, options) {
 Scope.prototype.overlay = function (options) {
     var scope = new Scope(this, options);
     return scope;
-}
+};
 
 Scope.prototype.add = function (name, node) {
     this.currentScope.add(name, node);
-}
+};
 
 Scope.prototype.resolve = function (name) {
     var curr = this;
@@ -209,11 +209,11 @@ Scope.prototype.resolve = function (name) {
     }
     if (curr === null) return null;
     else return curr.scope[name];
-}
+};
 
 Scope.prototype.exit = function () {
     return this.parent;
-}
+};
 
 // TODO: LetStatement's scope should be statements
 // after it instead of whole block.
