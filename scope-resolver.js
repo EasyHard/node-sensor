@@ -25,7 +25,7 @@ var handler = {
     },
     Function: functionHandler,
     Identifier: function (node) {
-        this.resolve(node);
+        node.scopeRef = this.resolve(node);
     },
     EmptyStatement: function () {},
     BlockStatement: function (node) {
@@ -181,8 +181,6 @@ var handler = {
             this.walk(node.property);
         }
     }
-
-
 };
 
 function Scope(parent, options) {
