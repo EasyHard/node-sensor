@@ -15,7 +15,7 @@ function walkAST(ast, handler, thisForHandler) {
 
 function functionHandler(node) {
     var self = this;
-    this.params.forEach(param => {
+    node.params.forEach(param => {
             self.walk(param);
     });
     this.walk(node.body);
@@ -28,7 +28,7 @@ var defaultHandler = {
     Function: functionHandler,
     EmptyStatement: function () {},
     BlockStatement: function (node) {
-        this.body.forEach(statement => this.walk(statement));
+        node.body.forEach(statement => this.walk(statement));
     },
     ExpressionStatement: function (node) {
         this.walk(node.expression);
